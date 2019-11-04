@@ -1,0 +1,722 @@
+<?xml version="1.0"?>
+<!-- Revolute-Revolute Manipulator -->
+<robot name="$(arg robot_name)" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+      <xacro:property name="PI" value="3.1415926835897931"/>
+      <xacro:property name="base_height" value="1.0"/>
+      <xacro:property name="base_mass" value="2050"/>
+      <xacro:property name="base_mass_ixx" value="63"/>
+      <xacro:property name="base_mass_iyy" value="1048"/>
+      <xacro:property name="base_mass_izz" value="1111"/>
+      <xacro:property name="base_mass_ixz" value="-31"/>
+      <xacro:property name="car_width" value="1.200"/>
+      <xacro:property name="car_height" value="0.6"/>
+      <xacro:property name="tyre_x_front" value="0.76537"/>
+      <xacro:property name="tyre_y_front" value="1.41472"/>
+      <xacro:property name="tyre_length_front" value="0.26948"/>
+      <xacro:property name="tyre_x_back" value="0.76536"/>
+      <xacro:property name="tyre_y_back" value="1.44998"/>
+      <xacro:property name="tyre_length_back" value="0.26948"/>
+      <xacro:property name="tyre_r" value="0.5"/>
+      <xacro:property name="tyre_radius" value="0.304695"/>
+      <xacro:property name="tyre_mass" value="40"/>
+      <xacro:property name="tyre_mass_ixx" value="54"/>
+      <xacro:property name="tyre_mass_iyy" value="56"/>
+      <xacro:property name="tyre_mass_izz" value="104"/>
+      <xacro:property name="car_to_bumper" value="2.4"/>
+      <xacro:property name="front_bumper_height" value="${car_height/2}"/>
+      <xacro:property name="sensor_box" value="0.15"/>
+      <xacro:property name="sensor_box2" value="0.31"/>
+      <xacro:property name="camera_box" value="0.1"/>
+      <xacro:property name="tyre_height" value="-0.696"/>
+      <xacro:property name="str_length" value="0.01"/>
+      <xacro:property name="str_radius" value="0.1"/>
+      <xacro:property name="str_angle" value="0.6"/>
+      <xacro:property name="judgeheight" value="0.12"/>
+
+      <!-- Import all Gazebo-customization elements, including Gazebo colors -->
+      <xacro:include filename="$(find multi_car)/description/urdf/urdf_prius/prius.gazebo" />
+
+
+    <!-- Car Body -->
+
+    <link name="base_link">
+        <collision>
+            <origin xyz="0 0 ${base_height}" rpy="0 0 0"/>  
+              <geometry>
+                <box size="${car_width} 4.5 ${car_height}"/>
+            </geometry>
+          </collision>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>  
+            <geometry>
+              <mesh filename="file:///$(find multi_car)/description/meshes/prius/prius_nowheel.obj" scale="0.01 0.01 0.01"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <joint name="inertial_joint" type="fixed">
+          <parent link="base_link"/>
+          <child link="main_mass"/>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="main_mass" type="fixed">
+        <parent link="inertial_joint"/>
+        <inertial>
+            <origin xyz="0 -0.2 ${base_height}" rpy="0 0 0"/>
+            <mass value="${base_mass}"/>
+            <inertia
+              ixx="${base_mass_ixx}"  ixy="0.000000" ixz="${base_mass_ixz}"
+              iyy="${base_mass_iyy}" iyz="0.000000"
+              izz="${base_mass_izz}"/>
+          </inertial>
+    </link>
+    <!--Back Right Wheel-->
+
+    <joint name="back_right_wheel_joint" type="continuous">
+          <parent link="base_link"/>
+          <child link="back_right_wheel_link"/>
+          <origin xyz="${-tyre_x_back} ${tyre_y_back} ${tyre_r-judgeheight-0.1}" rpy="0 0 0"/>
+          <axis xyz="1 0 0"/>
+          <dynamics damping="0.1"/>
+        <limit effort="10000" velocity="100" />
+          <joint_properties damping="0.0" friction="0.0" />
+    </joint>
+
+    <link name="back_right_wheel_link">
+        <collision>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 ${PI/2} "/>
+            <geometry>
+            <cylinder length="${tyre_length_back}" radius="${tyre_radius}"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="${tyre_x_back} ${-tyre_y_back} ${-tyre_radius-judgeheight+0.13}" rpy="0 0 0 "/>
+            <geometry>
+              <mesh filename="file:///$(find multi_car)/description/meshes/prius/wheel_backright.obj" scale="0.01 0.01 0.01"/>
+            </geometry>
+        </visual>
+
+          <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${tyre_mass}"/>
+            <inertia
+              ixx="${tyre_mass_ixx}"  ixy="0.000000"  ixz="0.000000"
+              iyy="${tyre_mass_iyy}"  iyz="0.000000"
+              izz="${tyre_mass_izz}"/>
+          </inertial>
+    </link>
+
+    <!--Back Left Wheel-->
+
+    <joint name="back_left_wheel_joint" type="continuous">
+          <parent link="base_link"/>
+          <child link="back_left_wheel_link"/>
+          <origin xyz="${tyre_x_back} ${tyre_y_back} ${tyre_r-judgeheight-0.1}" rpy="0 0 0"/>
+          <axis xyz="1 0 0"/>
+          <dynamics damping="0.1"/>
+        <limit effort="10000" velocity="100" />
+          <joint_properties damping="0.0" friction="0.0" />
+    </joint>
+
+    <link name="back_left_wheel_link">
+        <collision>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 ${PI/2} "/>
+            <geometry>
+            <cylinder length="${tyre_length_back}" radius="${tyre_radius}"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="${-tyre_x_back} ${-tyre_y_back} ${-tyre_radius-judgeheight+0.13}" rpy="0 0 0 "/>
+            <geometry>
+              <mesh filename="file:///$(find multi_car)/description/meshes/prius/wheel_backleft.obj" scale="0.01 0.01 0.01"/>
+            </geometry>
+        </visual>
+
+          <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${tyre_mass}"/>
+            <inertia
+              ixx="${tyre_mass_ixx}"  ixy="0.000000"  ixz="0.000000"
+              iyy="${tyre_mass_iyy}"  iyz="0.000000"
+              izz="${tyre_mass_izz}"/>
+          </inertial>
+    </link>
+
+<!--Right Steering-->
+
+<joint name="front_right_steering_joint" type="revolute">
+	<parent link="base_link"/>
+	<child link="front_right_steering_link"/>
+	<origin xyz="${-tyre_x_front-str_length/2} ${-tyre_y_front} ${tyre_r-judgeheight-0.1}" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+	<limit effort="1000.0" lower="${-str_angle}" upper="${str_angle}" velocity="0.5"/>
+</joint>
+
+<link name="front_right_steering_link">
+	<collision>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 ${PI/2} "/>
+	      <geometry>
+        <cylinder length="${str_length}" radius="${str_radius}"/>
+       	</geometry>
+	</collision>
+
+	<visual>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 ${PI/2} "/>
+        <geometry>
+        <cylinder length="${str_length}" radius="${str_radius}"/>
+        </geometry>
+	</visual>
+
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="10.00"/>
+        <inertia
+          ixx="0.4"  ixy="0.000000"  ixz="0.000000"
+          iyy="0.6"  iyz="0.000000"
+          izz="0.4"/>
+      </inertial>
+</link>
+
+<!--Right Front Wheel-->
+
+<joint name="front_right_wheel_joint" type="continuous">
+      <parent link="front_right_steering_link"/>
+      <child link="front_right_wheel_link"/>
+      <origin xyz="${-str_length/2 - tyre_length_front/2} 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+</joint>
+
+<link name="front_right_wheel_link">
+     <collision>
+       <origin xyz="0 0 0" rpy="${PI/2} 0 ${PI/2} "/>
+        <geometry>
+         <cylinder length="${tyre_length_front}" radius="${tyre_radius}"/>
+	</geometry>
+     </collision>
+
+     <visual>
+      <origin xyz="${tyre_x_front} ${tyre_y_front} ${-tyre_radius}" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file:///$(find multi_car)/description/meshes/prius/wheel_frontright.obj" scale="0.01 0.01 0.01"/>
+       </geometry>  
+      </visual>
+
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${tyre_mass}"/>
+        <inertia
+          ixx="${tyre_mass_ixx}"  ixy="0.000000"  ixz="0.000000"
+          iyy="${tyre_mass_iyy}"  iyz="0.000000"
+          izz="${tyre_mass_izz}"/>
+      </inertial>
+</link>
+
+
+<!--Left Steering-->
+
+<joint name="front_left_steering_joint" type="revolute">
+	<parent link="base_link"/>
+	<child link="front_left_steering_link"/>
+	<origin xyz="${tyre_x_front+str_length/2} ${-tyre_y_front} ${tyre_r-judgeheight-0.1}" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+	<limit effort="1000.0" lower="${-str_angle}" upper="${str_angle}" velocity="0.5"/>
+</joint>
+
+<link name="front_left_steering_link">
+	<collision>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 ${PI/2} "/>
+	        <geometry>
+        	 <cylinder length="${str_length}" radius="${str_radius}"/>
+       		</geometry>
+	</collision>
+
+	<visual>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 ${PI/2} "/>
+        <geometry>
+        <cylinder length="${str_length}" radius="${str_radius}"/>
+        </geometry>
+	</visual>
+
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="10.00"/>
+        <inertia
+          ixx="0.4"  ixy="0.000000"  ixz="0.000000"
+          iyy="0.6"  iyz="0.000000"
+          izz="0.4"/>
+      </inertial>
+</link>
+
+<!--Left Front Wheel-->
+
+<joint name="front_left_wheel_joint" type="continuous">
+      <parent link="front_left_steering_link"/>
+      <child link="front_left_wheel_link"/>
+      <origin xyz="${str_length/2 + tyre_length_front/2} 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+</joint>
+
+<link name="front_left_wheel_link">
+     <collision>
+       <origin xyz="0 0 0" rpy="${PI/2} 0 ${PI/2} "/>
+        <geometry>
+         <cylinder length="${tyre_length_front}" radius="${tyre_radius}"/>
+      	</geometry>
+     </collision>
+
+     <visual>
+      <origin xyz="${-tyre_x_front} ${tyre_y_front} ${-tyre_radius}" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file:///$(find multi_car)/description/meshes/prius/wheel_frontleft.obj" scale="0.01 0.01 0.01"/>
+       </geometry>  
+      </visual>
+
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${tyre_mass}"/>
+        <inertia
+          ixx="${tyre_mass_ixx}"  ixy="0.000000"  ixz="0.000000"
+          iyy="${tyre_mass_iyy}"  iyz="0.000000"
+          izz="${tyre_mass_izz}"/>
+      </inertial>
+</link>
+
+<!-- Cameras-->
+
+<joint name="camera_right_joint" type="fixed">
+<origin xyz="${-tyre_x_front/2 - camera_box/2-0.4} ${-tyre_y_front/2-0.25} ${0.725 + camera_box/2 }" rpy="0 0 ${PI}"/>
+	<axis xyz="0 0 1"/>
+	<parent link="base_link"/>
+	<child link="camera_right_link"/>
+</joint>
+
+<link name="camera_right_link">
+	<collision>
+	  <origin xyz="0 0 0" rpy="0 0 0"/>
+	  <geometry>
+	   <box size="${camera_box} ${camera_box} ${camera_box}"/>
+	  </geometry>
+	</collision>
+
+	<visual>
+	  <origin xyz="0 0 0" rpy="0 0 0"/>
+	  <geometry>
+	  <box size="${camera_box} ${camera_box} ${camera_box}"/>
+    </geometry>
+	</visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+</link>
+  <gazebo reference="camera_right_link">
+    <sensor type="camera" name="camera_right_sensor">
+      <update_rate>30.0</update_rate>
+      <camera name="camera_right">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_right_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>false</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>camera_right</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>/$(arg robot_name)/camera_right_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+<joint name="camera_left_joint" type="fixed">
+<origin xyz="${tyre_x_front/2 + camera_box/2+0.4} ${-tyre_y_front/2-0.25} ${0.725 + camera_box/2}" rpy="0 0 0"/>
+	<axis xyz="0 0 1"/>
+	<parent link="base_link"/>
+	<child link="camera_left_link"/>
+</joint>
+
+<link name="camera_left_link">
+	<collision>
+	  <origin xyz="0 0 0" rpy="0 0 0"/>
+	  <geometry>
+	   <box size="${camera_box} ${camera_box} ${camera_box}"/>
+	  </geometry>
+	</collision>
+
+	<visual>
+	  <origin xyz="0 0 0" rpy="0 0 0"/>
+	  <geometry>
+	  <box size="${camera_box} ${camera_box} ${camera_box}"/>
+    </geometry>
+	</visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+</link>
+  <gazebo reference="camera_left_link">
+    <sensor type="camera" name="camera_left_sensor">
+      <update_rate>30.0</update_rate>
+      <camera name="camera_left">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_left_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>false</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>camera_left</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>/$(arg robot_name)/camera_left_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+<joint name="camera_front_joint" type="fixed">
+<origin xyz="0 ${-car_to_bumper+0.2} ${front_bumper_height + sensor_box/2 + 0.5}" rpy="0 0 ${-PI/2}"/>
+	<axis xyz="0 0 1"/>
+	<parent link="base_link"/>
+	<child link="camera_front_link"/>
+</joint>
+
+<link name="camera_front_link">
+	<collision>
+	  <origin xyz="0 0 0" rpy="0 0 0"/>
+	  <geometry>
+	   <box size="${camera_box} ${camera_box} ${camera_box}"/>
+	  </geometry>
+	</collision>
+
+	<visual>
+	  <origin xyz="0 0 0" rpy="0 0 0"/>
+	  <geometry>
+	  <box size="${camera_box} ${camera_box} ${camera_box}"/>
+    </geometry>
+	</visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+</link>
+  <gazebo reference="camera_front_link">
+    <sensor type="camera" name="camera_front_sensor">
+      <update_rate>50.0</update_rate>
+      <camera name="camera_front">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>640</width>
+          <width>480</width>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_front_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>false</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>camera_front</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>/$(arg robot_name)/camera_front_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+<joint name="camera_joint" type="fixed">
+<origin xyz="0 0.45 ${1.425 + sensor_box/2+0.09 }" rpy="0 0 ${-PI/2}"/>
+	<axis xyz="0 0 1"/>
+	<parent link="base_link"/>
+	<child link="camera_link"/>
+</joint>
+
+<link name="camera_link">
+	<collision>
+	  <origin xyz="0 0 0" rpy="0 0 0"/>
+	  <geometry>
+	   <box size="${sensor_box} ${sensor_box} ${sensor_box}"/>
+	  </geometry>
+	</collision>
+
+	<visual>
+	  <origin xyz="0 0 0" rpy="0 0 0"/>
+	  <geometry>
+	  <box size="${sensor_box} ${sensor_box} ${sensor_box}"/>
+          </geometry>
+	</visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+</link>
+
+  <gazebo reference="camera_link">
+    <sensor type="camera" name="camera_sensor">
+      <update_rate>30.0</update_rate>
+      <camera name="camera">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_link_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>false</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>camera_link</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>/$(arg robot_name)/camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+
+<!--Velodyne LIDAR-->
+
+
+
+<joint name="velodyne_joint" type="fixed">
+	<origin xyz="0 0 ${sensor_box/2 + 0.01}" rpy="0 0 0"/>
+	<axis xyz="0 0 1"/>
+	<parent link="camera_link"/>
+	<child link="center_laser_link"/>
+</joint>
+
+<link name="center_laser_link">
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+           <box size="${sensor_box} ${sensor_box} ${sensor_box}"/>
+          </geometry>
+        </collision>
+
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+           <box size="${sensor_box} ${sensor_box} ${sensor_box}"/>
+          </geometry>
+        </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+</link>
+
+<gazebo reference="center_laser_link">
+    <sensor name='center_laser_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>512</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14</min_angle>
+            <max_angle>3.14</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>16</samples>
+            <min_angle>-0.1</min_angle>
+            <max_angle>-0.35</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>30</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name='sick_lms291_controller' filename='libgazebo_ros_block_laser.so'>
+        <topicName>/$(arg robot_name)/center_laser/scan</topicName>
+        <frameName>center_laser_link</frameName>
+      </plugin>
+      <always_on>1</always_on>
+      <update_rate>30</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+
+<!--front_laser-->
+<joint name="front_laser_joint" type="fixed">
+	<origin xyz="0 ${-car_to_bumper+0.1} ${front_bumper_height }" rpy="0 0 0"/>
+	<axis xyz="0 0 1"/>
+	<parent link="base_link"/>
+	<child link="front_laser_link"/>
+</joint>
+
+
+<link name="front_laser_link">
+     <parent link="front_laser_joint"/>
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0.0 0"/>
+          <geometry>
+           <box size="${sensor_box/1.5} ${sensor_box/1.5} ${sensor_box/1.5}"/>
+          </geometry>
+        </collision>
+
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+           <box size="${sensor_box/1.5} ${sensor_box/1.5} ${sensor_box/1.5}"/>
+          </geometry>
+        </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+</link>
+<gazebo reference="front_laser_link">
+        <sensor type="ray" name="front_laser_sensor">
+              <pose>0 0 0 0 0 0</pose>
+                   <visualize>true</visualize>
+                    <update_rate>50</update_rate>
+                       <ray>
+                           <scan>
+                                <horizontal>
+                                       <samples>180</samples>
+                                           <resolution>1</resolution>
+                                            <min_angle>-3.14</min_angle>
+                                            <max_angle>0</max_angle>
+                                </horizontal>
+                           </scan>
+                           <range>
+                                <min>1.5</min>
+                                <!-- This range is in m, I hope... -->
+                                <max>80.0</max>
+                                <resolution>0.05</resolution>
+                           </range>
+                      </ray>
+			   <plugin name="front_laser" filename="libgazebo_ros_laser.so">
+			      <topicName>/$(arg robot_name)/front_laser/scan</topicName>
+			      <frameName>/$(arg robot_name)/front_laser_link</frameName>
+			      <gaussianNoise>0.02</gaussianNoise>
+                 </plugin>
+      </sensor>
+</gazebo>
+
+<!-- motors and transmissions for the two rear wheels -->
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="back_right_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="back_left_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="rack_and_pinion_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="front_left_steering_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="eps_left">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="rack_and_pinion_right">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="front_right_steering_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="eps_right">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+</robot>

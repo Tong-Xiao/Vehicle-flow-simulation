@@ -1,0 +1,86 @@
+
+<launch>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find multi_car)/world/cross_road.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="recording" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+
+
+<!-- add car example step2 -->
+<group ns="ambulance_1">
+<param name="robot_description"
+         command="$(find xacro)/xacro --inorder '$(find multi_car)/description/urdf/urdf_ambulance/ambulance.xacro' robot_name:='ambulance_1'" />
+<include file="$(find multi_car)/launch/ambulance.launch">
+    <!-- 加载车辆位置 -->
+    <arg name="init_pose" value="-x 4 -y -50 -z 0.3"/>
+    <!-- 加载车辆朝向 -->
+    <arg name="init_argue" value="-R 0 -P 0 -Y 3.14"/>
+    <!-- 加载车辆命名 -->
+    <arg name="robot_name" value="ambulance_1"/>
+</include>
+</group>
+
+<!-- add car example step2 -->
+<group ns="ambulance">
+<param name="robot_description"
+         command="$(find xacro)/xacro --inorder '$(find multi_car)/description/urdf/urdf_ambulance/ambulance.xacro' robot_name:='ambulance'" />
+<include file="$(find multi_car)/launch/ambulance.launch">
+    <!-- 加载车辆位置 -->
+    <arg name="init_pose" value="-x -404 -y -60 -z 0.3"/>
+    <!-- 加载车辆朝向 -->
+    <arg name="init_argue" value="-R 0 -P 0 -Y 0"/>
+    <!-- 加载车辆命名 -->
+    <arg name="robot_name" value="ambulance"/>
+</include>
+</group>
+
+
+<group ns="prius">
+<param name="robot_description"
+         command="$(find xacro)/xacro --inorder '$(find multi_car)/description/urdf/urdf_prius/prius.xacro' robot_name:='prius'" />
+<include file="$(find multi_car)/launch/prius.launch">
+    <arg name="init_pose" value="-x 4 -y 308 -z 0.2"/>
+    <arg name="init_argue" value="-R 0 -P 0 -Y 3.14"/>
+    <arg name="robot_name" value="prius"/>
+</include>
+</group>
+
+
+
+<group ns="suv">
+<param name="robot_description"
+         command="$(find xacro)/xacro --inorder '$(find multi_car)/description/urdf/urdf_suv/suv.xacro' robot_name:='suv'" />
+<include file="$(find multi_car)/launch/suv.launch">
+    <arg name="init_pose" value="-x -250 -y -144 -z 0.2"/>
+    <arg name="init_argue" value="-R 0 -P 0 -Y 1.57"/>
+    <arg name="robot_name" value="suv"/>
+</include>
+</group>
+
+<group ns="suv_1">
+<param name="robot_description"
+         command="$(find xacro)/xacro --inorder '$(find multi_car)/description/urdf/urdf_suv/suv.xacro' robot_name:='suv_1'" />
+<include file="$(find multi_car)/launch/suv.launch">
+    <arg name="init_pose" value="-x -100 -y -348 -z 0.2"/>
+    <arg name="init_argue" value="-R 0 -P 0 -Y 1.57"/>
+    <arg name="robot_name" value="suv_1"/>
+</include>
+</group>
+
+<group ns="pickup">
+<param name="robot_description"
+         command="$(find xacro)/xacro --inorder '$(find multi_car)/description/urdf/urdf_pickup/pickup.xacro' robot_name:='pickup'" />
+<include file="$(find multi_car)/launch/pickup.launch">
+    <arg name="init_pose" value="-x 250 -y 404 -z 0.1 "/>
+    <arg name="init_argue" value="-R 0 -P 0 -Y 1.57"/>
+    <arg name="robot_name" value="pickup"/>
+</include>
+</group> 
+
+</launch>

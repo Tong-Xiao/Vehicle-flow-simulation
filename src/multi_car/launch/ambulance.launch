@@ -1,0 +1,34 @@
+<launch>
+<arg name="robot_name"/>
+<arg name="init_pose"/>
+<arg name="init_argue"/>  
+<param name="nssss" type="string" value="$(arg robot_name)" />
+<param name="reduction_rstio" value="2.3172" />
+
+    <!-- 在gazebo中显示-->
+  <node name="urdf_spawner$(arg robot_name)" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="$(arg init_pose) -urdf -model $(arg robot_name) -param robot_description $(arg init_argue)"/>
+
+  <node name="robot_state_publisher$(arg robot_name)" pkg="robot_state_publisher" type="robot_state_publisher"
+	respawn="false" output="screen">
+    <remap from="/joint_states" to="/$(arg robot_name)/joint_states" />
+  </node>
+ 
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find multi_car)/config/ambulance_control.yaml" command="load"/>
+  <param name="tf_prefix" value="$(arg robot_name)"/>
+
+   <!-- load the controllers -->
+  <node name="controller_spawner$(arg robot_name)" pkg="controller_manager" type="spawner" respawn="false"
+	output="screen" ns="/$(arg robot_name)" args="joint1_velocity_controller joint2_velocity_controller front_left_steering_position_controller front_right_steering_position_controller  joint_state_controller"/>
+ 
+
+  <node name="cmdvel2gazebo$(arg robot_name)" pkg="multi_car" type="cmdvel2gazebo.py" respawn="false" output="screen"> 
+  </node>
+
+  <node name="camera_calc_node$(arg robot_name)" pkg="multi_car" type="test_lane.py" respawn="false" output="screen"/>
+
+  <node name="obstacle_control_node$(arg robot_name)" pkg="multi_car" type="obstacle.py" respawn="false" output="screen"/>
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find multi_car)/rviz/ambulance_rviz.rviz" required="true" /> -->
+
+</launch>
